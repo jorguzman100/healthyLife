@@ -232,10 +232,39 @@ $(document).ready(() => {
         console.log("item.search: ", item.search);
         if (item.search === lsName) {
           console.log("SECOND SAVE");
-          item.nutrition.push({
-            id: id,
-            visNutrition: resp,
-          });
+          switch (property) {
+            case "visNutrition":
+              console.log("case: visNutrition");
+              item.nutrition.push({
+                id: id,
+                visNutrition: resp,
+              });
+              displayNutrition(id, lsName, resp);
+              break;
+            case "visPrice":
+              console.log("case: visPrice");
+              item.price.push({
+                id: id,
+                visPrice: resp,
+              });
+              break;
+            case "visIngredients":
+              console.log("case: visIngredients");
+              item.ingreds.push({
+                id: id,
+                visIngredients: resp,
+              });
+              displayIngredients(id, lsName, resp);
+              break;
+            case "visEquipement":
+              console.log("case: visEquipement");
+              item.equipment.push({
+                id: id,
+                visEquipement: resp,
+              });
+              break;
+          }
+
           console.log("item: ", item);
           let itemStr = JSON.stringify(item);
           localStorage.setItem(lsName, itemStr);
@@ -247,9 +276,9 @@ $(document).ready(() => {
         search: lsName,
         response: resp,
         nutrition: [],
-        visPrice: "",
-        visIngredients: "",
-        visEquipement: "",
+        price: [],
+        ingreds: [],
+        equipment: [],
       };
       let responseObjectString = JSON.stringify(responseObject);
       localStorage.setItem(lsName, responseObjectString);
@@ -269,6 +298,7 @@ $(document).ready(() => {
       $("#recipientIdP").text("ID: " + id);
       $("#recipeImage").attr("src", imageUrl);
       $("#summaryDiv").html(summary);
+      getVisualizeNutrition(id, title);
     } else {
       const lsArray = getFromLocalStorage();
       if (lsArray.length > 0) {
@@ -314,16 +344,23 @@ $(document).ready(() => {
   function getVisualizeNutrition(id, lsName, lsArray) {
     console.log("getVisualizeNutrition()");
     let matchFlag = 0;
-    lsArray.forEach((item) => {
-      item.nutrition.forEach((nutObject) => {
-        console.log("nutObject.id: " + nutObject.id + "  id: ", id);
-        if (nutObject.id === id) {
-          console.log("MATCH!");
-          matchFlag = 1;
-          displayNutrition(nutObject.id, item.search, nutObject.visNutrition);
-        }
+    if (lsArray) {
+      lsArray.forEach((item) => {
+        item.nutrition.forEach((ingredObject) => {
+          console.log("ingredObject.id: " + ingredObject.id + "  id: ", id);
+          if (ingredObject.id === id) {
+            console.log("NUTRITION MATCH!");
+            matchFlag = 1;
+            displayNutrition(
+              ingredObject.id,
+              item.search,
+              ingredObject.visNutrition
+            );
+          }
+        });
       });
-    });
+    }
+
     if (matchFlag === 0) {
       const visNutriUrl = `https://api.spoonacular.com/recipes/${id}/nutritionWidget?defaultCss=true`;
       runAjaxGet(visNutriUrl, bridgeNutrition, lsName, id);
@@ -342,15 +379,55 @@ $(document).ready(() => {
     console.log("id: ", id);
     console.log("lsName: ", lsName);
     $("#visNutritionDiv").html(visNutrition);
+    getVisualIngredients(id, lsName);
   }
 
   /* ------------------ Price Breakdown ------------------ */
   /* ------------------ Ingredients ------------------ */
+  function getVisualIngredients(id, lsName) {
+    console.log("getVisualIngredients()");
+    console.log("id: ", id);
+    console.log("lsName: ", lsName);
+    let matchFlag = 0;
+    const lsArray = getFromLocalStorage();
+    lsArray.forEach((item) => {
+      item.ingreds.forEach((ingredObject) => {
+        console.log("ingredObject.id: " + ingredObject.id + "  id: ", id);
+        if (ingredObject.id === id) {
+          console.log("INGREDS MATCH!");
+          matchFlag = 1;
+          displayIngredients(id, lsName, ingredObject.visIngredients);
+        }
+      });
+    });
+    if (matchFlag === 0) {
+      const visIngredsUrl = `https://api.spoonacular.com/recipes/${id}/ingredientWidget?defaultCss=true`;
+      runAjaxGet(visIngredsUrl, bridgeIngredients, lsName, id);
+    }
+  }
+
+  function bridgeIngredients(res, lsName, id) {
+    console.log("bridgeIngredients()");
+    console.log("lsName: ", lsName);
+    console.log("id: ", id);
+    console.log("res: ", res);
+    saveToLocalStorage(res, lsName, "visIngredients", id);
+  }
+
+  function displayIngredients(id, lsName, visIngredients) {
+    console.log("displayIngredients()");
+    console.log("id: ", id);
+    console.log("lsName: ", lsName);
+    $("#visIngredients").html(visIngredients);
+    /* getVisualIngredients(id, lsName); */
+  }
+
   /* ------------------ Instructions ------------------ */
   /* ------------------ Meal Planning ------------------ */
   /* ********************* Event Listeners ********************* */
   /* -------- Search -------- */
   $("#searchButton").on("click", () => {
+    console.log("searchButton-clicked()");
     var searchRecipe = $("#recipeSearchInput").val();
     var apiKey = "d90e6364332c482bbb5de501896cdf28";
     var queryUrl = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${apiKey}&query=${searchRecipe}&number=${$(
