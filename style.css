@@ -1,0 +1,26 @@
+/* ********************* Mobile First ********************* */
+/* ------------------ Global ------------------ */
+
+/* ------------------ Header ------------------ */
+header {
+  background: green;
+  color: white;
+  font-size: 1.75rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* ------------------ Search ------------------ */
+.form-group,
+.dropdown,
+.input-group {
+  margin-left: 5rem;
+}
+
+/* ------------------ Nutritional Information ------------------ */
+/* ------------------ Price Breakdown ------------------ */
+/* ------------------ Ingredients ------------------ */
+/* ------------------ Instructions ------------------ */
+/* ------------------ Meal Planning ------------------ */
+
+/* ********************* Media Queries ********************* */
